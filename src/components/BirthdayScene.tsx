@@ -1,13 +1,15 @@
 "use client";
 
-import { useRef } from "react";
-import { useFrame } from "@react-three/fiber";
-import { Text, Sphere, Box } from "@react-three/drei";
+import { useRef, useState, useEffect } from "react";
+import { useFrame, useThree } from "@react-three/fiber";
+import { Text, Sphere, Box, Plane } from "@react-three/drei";
 import * as THREE from "three";
 
 interface BirthdaySceneProps {
   name: string;
   audioLevel?: number;
+  takeSnapshot?: boolean;
+  onSnapshotTaken?: (dataUrl: string) => void;
 }
 
 function Balloon({
@@ -140,31 +142,96 @@ function FloatingParticles({ audioLevel = 0 }: { audioLevel?: number }) {
   );
 }
 
+function DynamicText({
+  text,
+  audioLevel = 0,
+}: {
+  text: string;
+  audioLevel?: number;
+}) {
+  const textRef = useRef<THREE.Mesh>(null);
+
+  useFrame((state) => {
+    if (textRef.current) {
+      textRef.current.scale.setScalar(1 + Math.sin(state.clock.elapsedTime * 2) * 0.1 + audioLevel * 0.1);
+    }
+  });
+
+  return (
+    <Text
+      ref={textRef}
+      position={[0, 3, 0]}
+      fontSize={1.2}
+      color="#FF4500"
+      anchorX="center"
+      anchorY="middle"
+      rotation-y={Math.PI * 0.1}
+    >
+      {text}
+    </Text>
+  );
+}
+
+function PhotoBooth({
+  takeSnapshot,
+  onSnapshotTaken,
+}: {
+  takeSnapshot?: boolean;
+  onSnapshotTaken?: (dataUrl: string) => void;
+}) {
+  const { gl, scene, camera } = useThree();
+  const [snapshot, setSnapshot] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (takeSnapshot) {
+      gl.render(scene, camera);
+      const dataUrl = gl.domElement.toDataURL("image/png");
+      setSnapshot(dataUrl);
+      onSnapshotTaken?.(dataUrl);
+    }
+  }, [takeSnapshot, gl, scene, camera, onSnapshotTaken]);
+
+  return snapshot ? (
+    <Plane args={[4, 3]} position={[0, 1.5, 2]}>
+      <meshStandardMaterial map={new THREE.TextureLoader().load(snapshot)} />
+    </Plane>
+  ) : null;
+}
+
+function GiftBox() {
+  const boxRef = useRef<THREE.Group>(null);
+  const lidRef = useRef<THREE.Mesh>(null);
+
+  useFrame((state) => {
+    if (boxRef.current && lidRef.current) {
+      const t = (1 + Math.sin(state.clock.elapsedTime * 0.5)) / 2;
+      lidRef.current.position.y = 0.5 + t * 0.5;
+      lidRef.current.rotation.x = -t * Math.PI * 0.3;
+    }
+  });
+
+  return (
+    <group ref={boxRef} position={[2.5, -0.5, 2]}>
+      <Box args={[1, 1, 1]}>
+        <meshStandardMaterial color="#FFD700" />
+      </Box>
+      <Box ref={lidRef} args={[1.1, 0.2, 1.1]} position={[0, 0.5, 0]}>
+        <meshStandardMaterial color="#FF6347" />
+      </Box>
+    </group>
+  );
+}
+
 export default function BirthdayScene({
   name,
   audioLevel = 0,
+  takeSnapshot = false,
+  onSnapshotTaken,
 }: BirthdaySceneProps) {
   return (
     <group position={[0, -1, 0]}>
-      <Text
-        position={[0, 3, 0]}
-        fontSize={1.2 + audioLevel * 0.15}
-        color="#FF69B4"
-        anchorX="center"
-        anchorY="middle"
-      >
-        Happy Birthday!
-      </Text>
-      <Text
-        position={[0, 1.5, 0]}
-        fontSize={0.8 + audioLevel * 0.1}
-        color="#9370DB"
-        anchorX="center"
-        anchorY="middle"
-      >
-        {name}
-      </Text>
-
+      <DynamicText text={`Happy Birthday, ${name}!`} audioLevel={audioLevel} />
+      
       <Balloon position={[-1.5, 2.2, -1]} color="#FF69B4" audioLevel={audioLevel} />
       <Balloon position={[-0.8, 2.4, 0]} color="#FFD700" audioLevel={audioLevel} />
       <Balloon position={[0.8, 2.4, 0]} color="#00CED1" audioLevel={audioLevel} />
@@ -173,6 +240,8 @@ export default function BirthdayScene({
 
       <BirthdayCake audioLevel={audioLevel} />
       <FloatingParticles audioLevel={audioLevel} />
+      <GiftBox audioLevel={audioLevel} />
+      <PhotoBooth takeSnapshot={takeSnapshot} onSnapshotTaken={onSnapshotTaken} />
     </group>
   );
 }
