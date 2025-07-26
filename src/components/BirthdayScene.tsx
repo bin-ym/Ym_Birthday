@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import { useFrame, useThree } from "@react-three/fiber";
-import { Text, Sphere, Box, Plane } from "@react-three/drei";
+import { useRef, useState } from "react";
+import { useFrame } from "@react-three/fiber";
+import { Text, Sphere, Box, Stars } from "@react-three/drei";
 import * as THREE from "three";
 
 interface BirthdaySceneProps {
@@ -172,64 +172,61 @@ function DynamicText({
   );
 }
 
-function PhotoBooth({
-  takeSnapshot,
-  onSnapshotTaken,
-}: {
-  takeSnapshot?: boolean;
-  onSnapshotTaken?: (dataUrl: string) => void;
-}) {
-  const { gl, scene, camera } = useThree();
-  const [snapshot, setSnapshot] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (takeSnapshot) {
-      gl.render(scene, camera);
-      const dataUrl = gl.domElement.toDataURL("image/png");
-      setSnapshot(dataUrl);
-      onSnapshotTaken?.(dataUrl);
-    }
-  }, [takeSnapshot, gl, scene, camera, onSnapshotTaken]);
-
-  return snapshot ? (
-    <Plane args={[4, 3]} position={[0, 1.5, 2]}>
-      <meshStandardMaterial map={new THREE.TextureLoader().load(snapshot)} />
-    </Plane>
-  ) : null;
-}
-
-function GiftBox() {
-  const boxRef = useRef<THREE.Group>(null);
+function Present() {
+  const [isOpen, setIsOpen] = useState(false);
   const lidRef = useRef<THREE.Mesh>(null);
 
-  useFrame((state) => {
-    if (boxRef.current && lidRef.current) {
-      const t = (1 + Math.sin(state.clock.elapsedTime * 0.5)) / 2;
-      lidRef.current.position.y = 0.5 + t * 0.5;
-      lidRef.current.rotation.x = -t * Math.PI * 0.3;
+  useFrame(() => {
+    if (lidRef.current) {
+      lidRef.current.rotation.x = THREE.MathUtils.lerp(
+        lidRef.current.rotation.x,
+        isOpen ? -Math.PI / 2 : 0,
+        0.1
+      );
     }
   });
 
   return (
-    <group ref={boxRef} position={[2.5, -0.5, 2]}>
+    <group position={[-2.5, -0.5, 2]} onClick={() => setIsOpen(!isOpen)}>
       <Box args={[1, 1, 1]}>
-        <meshStandardMaterial color="#FFD700" />
-      </Box>
-      <Box ref={lidRef} args={[1.1, 0.2, 1.1]} position={[0, 0.5, 0]}>
         <meshStandardMaterial color="#FF6347" />
       </Box>
+      <Box ref={lidRef} args={[1.1, 0.2, 1.1]} position={[0, 0.5, 0]}>
+        <meshStandardMaterial color="#FFD700" />
+      </Box>
     </group>
+  );
+}
+
+function Starfield() {
+  const starsRef = useRef<THREE.Group>(null);
+
+  useFrame((state) => {
+    if (starsRef.current) {
+      starsRef.current.rotation.y = state.clock.elapsedTime / 10;
+    }
+  });
+
+  return (
+    <Stars
+      ref={starsRef}
+      radius={100}
+      depth={50}
+      count={5000}
+      factor={4}
+      saturation={0}
+      fade
+    />
   );
 }
 
 export default function BirthdayScene({
   name,
   audioLevel = 0,
-  takeSnapshot = false,
-  onSnapshotTaken,
 }: BirthdaySceneProps) {
   return (
     <group position={[0, -1, 0]}>
+      <Starfield />
       <DynamicText text={`Happy Birthday, ${name}!`} audioLevel={audioLevel} />
       
       <Balloon position={[-1.5, 2.2, -1]} color="#FF69B4" audioLevel={audioLevel} />
@@ -240,8 +237,7 @@ export default function BirthdayScene({
 
       <BirthdayCake audioLevel={audioLevel} />
       <FloatingParticles audioLevel={audioLevel} />
-      <GiftBox audioLevel={audioLevel} />
-      <PhotoBooth takeSnapshot={takeSnapshot} onSnapshotTaken={onSnapshotTaken} />
+      <Present />
     </group>
   );
 }

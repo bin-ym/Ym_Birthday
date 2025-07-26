@@ -94,27 +94,27 @@ export default function BirthdayForm({ onSubmit }: BirthdayFormProps) {
   };
 
   return (
-    <div className="relative w-full min-h-screen flex items-center justify-center p-4 overflow-hidden bg-gradient-to-br from-purple-100 via-pink-100 to-yellow-100">
+    <div className="relative w-full min-h-screen flex items-center justify-center p-4 sm:p-6 md:p-8 overflow-hidden bg-gradient-to-br from-purple-100 via-pink-100 to-yellow-100">
       <SparklesCore
         background="transparent"
         particleColor="#fff"
         className="absolute inset-0 z-10"
       />
       <Card className="w-full max-w-md shadow-2xl border-0 bg-white/80 backdrop-blur-lg rounded-2xl transform transition-all duration-500 hover:scale-105">
-        <CardHeader className="text-center p-8">
-          <div className="mx-auto w-20 h-20 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mb-4 animate-pulse">
-            <Gift className="w-10 h-10 text-white" />
+        <CardHeader className="text-center p-6 sm:p-8">
+          <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mb-4 animate-pulse">
+            <Gift className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
           </div>
-          <CardTitle className="text-3xl font-extrabold text-gray-800">
+          <CardTitle className="text-2xl sm:text-3xl font-extrabold text-gray-800">
             Let&apos;s Celebrate You!
           </CardTitle>
-          <CardDescription className="text-gray-600 mt-2">
+          <CardDescription className="text-sm sm:text-base text-gray-600 mt-2">
             Tell us about yourself to start the party 🎉
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <CardContent className="p-6 sm:p-8">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             <div className="space-y-2">
               <label
                 htmlFor="name"
@@ -128,7 +128,7 @@ export default function BirthdayForm({ onSubmit }: BirthdayFormProps) {
                 placeholder="Enter your name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className={`transition-all duration-300 rounded-lg px-4 py-3 bg-gray-50 border-2 w-full ${
+                className={`transition-all duration-300 rounded-lg px-4 py-3 bg-gray-50 border-2 w-full text-base ${
                   errors.name
                     ? "border-red-500 focus:border-red-500"
                     : "border-gray-200 focus:border-pink-500"
@@ -147,11 +147,11 @@ export default function BirthdayForm({ onSubmit }: BirthdayFormProps) {
                 <CalendarIcon className="w-4 h-4" />
                 Date of Birth
               </label>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
                 <select
                   value={day}
                   onChange={(e) => setDay(e.target.value)}
-                  className={`text-center rounded-lg px-4 py-3 bg-gray-50 border-2 ${
+                  className={`text-center rounded-lg px-2 sm:px-4 py-3 bg-gray-50 border-2 text-sm sm:text-base ${
                     errors.day || errors.date ? "border-red-500" : "border-gray-200"
                   }`}
                 >
@@ -168,7 +168,7 @@ export default function BirthdayForm({ onSubmit }: BirthdayFormProps) {
                 <select
                   value={month}
                   onChange={(e) => setMonth(e.target.value)}
-                  className={`text-center rounded-lg px-4 py-3 bg-gray-50 border-2 ${
+                  className={`text-center rounded-lg px-2 sm:px-4 py-3 bg-gray-50 border-2 text-sm sm:text-base ${
                     errors.month || errors.date ? "border-red-500" : "border-gray-200"
                   }`}
                 >
@@ -185,7 +185,7 @@ export default function BirthdayForm({ onSubmit }: BirthdayFormProps) {
                 <select
                   value={year}
                   onChange={(e) => setYear(e.target.value)}
-                  className={`text-center rounded-lg px-4 py-3 bg-gray-50 border-2 ${
+                  className={`text-center rounded-lg px-2 sm:px-4 py-3 bg-gray-50 border-2 text-sm sm:text-base ${
                     errors.year || errors.date ? "border-red-500" : "border-gray-200"
                   }`}
                 >
@@ -209,7 +209,7 @@ export default function BirthdayForm({ onSubmit }: BirthdayFormProps) {
 
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold py-4 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+              className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold py-3 sm:py-4 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl text-base sm:text-lg"
               aria-label="Start celebration"
             >
               🎉 Start My Celebration! 🎂

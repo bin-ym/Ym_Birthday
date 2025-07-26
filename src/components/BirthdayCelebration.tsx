@@ -31,8 +31,6 @@ export function BirthdayCelebration({
   const [isMuted, setIsMuted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioLevel, setAudioLevel] = useState(0);
-  const [takeSnapshot, setTakeSnapshot] = useState(false);
-  const [snapshotData, setSnapshotData] = useState<string | null>(null);
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
@@ -129,17 +127,8 @@ export function BirthdayCelebration({
     }
   };
 
-  const handleTakeSnapshot = () => {
-    setTakeSnapshot(true);
-  };
-
-  const handleSnapshotTaken = (dataUrl: string) => {
-    setSnapshotData(dataUrl);
-    setTakeSnapshot(false);
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-100 via-pink-100 to-purple-200 relative overflow-hidden flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-yellow-100 via-pink-100 to-purple-200 relative overflow-hidden flex flex-col p-4 sm:p-6 md:p-8">
       {/* Animated Icons */}
       <div className="absolute inset-0 pointer-events-none">
         {icons.map((icon, index) => (
@@ -171,25 +160,36 @@ export function BirthdayCelebration({
 
       {/* Info bar */}
       <motion.div
-        className="absolute top-4 left-4"
+        className="w-full text-center sm:text-left"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <p className="text-xl font-semibold text-gray-800">
+        <p className="text-lg sm:text-xl font-semibold text-gray-800">
           {name} is {age} years old!
         </p>
       </motion.div>
 
+      {/* 3D Scene */}
+      <div className="flex-1 flex items-center justify-center my-4">
+        <div className="w-full h-full max-w-4xl max-h-[70vh]">
+          <Canvas
+            camera={{ position: [0, 2, 9], fov: 50 }}
+            className="rounded-xl shadow-xl"
+          >
+            <ambientLight intensity={0.6} />
+            <pointLight position={[10, 10, 10]} intensity={1.2} />
+            <BirthdayScene
+              name={name}
+              audioLevel={audioLevel}
+            />
+            <OrbitControls enableZoom={true} />
+          </Canvas>
+        </div>
+      </div>
+
       {/* Controls */}
-      <div className="absolute bottom-4 right-4 flex gap-2">
-        <Button
-          onClick={handleTakeSnapshot}
-          className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-all"
-          aria-label="Take a snapshot"
-        >
-          Take a Snapshot 📸
-        </Button>
+      <div className="flex flex-wrap justify-center gap-2">
         <Button
           onClick={toggleMute}
           className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-all"
@@ -205,43 +205,6 @@ export function BirthdayCelebration({
           Back
         </Button>
       </div>
-
-      {/* 3D Scene */}
-      <div className="flex-1 flex items-center justify-center p-4">
-        <Canvas
-          camera={{ position: [0, 2, 7], fov: 50 }}
-          className="rounded-xl shadow-xl"
-          gl={{ preserveDrawingBuffer: true }}
-        >
-          <ambientLight intensity={0.5} />
-          <pointLight position={[10, 10, 10]} intensity={1} />
-          <BirthdayScene
-            name={name}
-            audioLevel={audioLevel}
-            takeSnapshot={takeSnapshot}
-            onSnapshotTaken={handleSnapshotTaken}
-          />
-          <OrbitControls enableZoom={false} />
-        </Canvas>
-      </div>
-
-      {/* Snapshot Display */}
-      {snapshotData && (
-        <motion.div
-          className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          onClick={() => setSnapshotData(null)}
-        >
-          <motion.img
-            src={snapshotData}
-            alt="Birthday Snapshot"
-            className="max-w-full max-h-full rounded-lg shadow-2xl"
-            initial={{ scale: 0.5 }}
-            animate={{ scale: 1 }}
-          />
-        </motion.div>
-      )}
 
       {/* Audio Element */}
       <audio
